@@ -31,6 +31,7 @@
 /// THE SOFTWARE.
 
 import UIKit
+import FirebaseCore
 import FirebaseAuth
 
 final class LoginViewController: UIViewController {
