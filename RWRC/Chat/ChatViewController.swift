@@ -36,6 +36,9 @@ import MessageKit
 import InputBarAccessoryView
 import FirebaseFirestore
 
+private var messages: [Message] = []
+private var messageListener: ListenerRegistration?
+
 final class ChatViewController: MessagesViewController {
   private let user: User
   private let channel: Channel
@@ -67,6 +70,45 @@ final class ChatViewController: MessagesViewController {
 
 // MARK: - MessagesDisplayDelegate
 extension ChatViewController: MessagesDisplayDelegate {}
+
+// MARK: - MessageDataSource
+extension ChatViewController: MessagesDataSource{
+  
+  // 1
+  func numberOfSections(
+    in messagesCollectionView: MessagesCollectionView
+  ) -> Int {
+    return messages.count
+  }
+  // 2
+  func currentSender() -> SenderType {
+    return Sender(senderId: user.uid, displayName: AppSettings.displayName)
+  }
+  // 3
+  func messageForItem(
+    at indexPath: IndexPath,
+    in messagesCollectionView: MessagesCollectionView
+  ) -> MessageType {
+    return messages[indexPath.section]
+  }
+  //4
+  func messageTopLabelAttributedText(
+    for message: MessageType,
+    at indexPath: IndexPath
+  ) -> NSAttributedString? {
+    let name = message.sender.displayName
+    return NSAttributedString(
+      string: name,
+      attributes: [
+        .font: UIFont.preferredFont(
+          forTextStyle: .caption1
+        ),
+        .foregroundColor: UIColor(white: 0.3, alpha: 1)
+      ])
+  }
+  
+}
+
 
 // MARK: - InputBarAccessoryViewDelegate
 extension ChatViewController: InputBarAccessoryViewDelegate {}
