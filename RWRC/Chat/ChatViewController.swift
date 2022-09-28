@@ -57,6 +57,10 @@ final class ChatViewController: MessagesViewController {
     fatalError("init(coder:) has not been implemented")
   }
 
+  deinit{
+    messageListener?.remove()
+  }
+  
   override func viewDidLoad() {
     super.viewDidLoad()
     listenToMessages()
@@ -72,6 +76,20 @@ final class ChatViewController: MessagesViewController {
       return
     }
     reference = database.collection("channels/\(id)/thread")
+    
+    messageListener = reference?.addSnapshotListener{
+      [weak self] querySnapshot, error in
+      guard let self = self else { return }
+      guard let snapshot = querySnapshot else {
+        print("""
+        Error listening for channel updates: \\(error?.localizedDescription ?? "No error")
+        """)
+        return
+      }
+      snapshot.documentChanges.forEach{
+        change in self.handleDocumentChange(change)
+      }
+    }
   }
 
   /* test message insert func
@@ -113,6 +131,19 @@ final class ChatViewController: MessagesViewController {
     
     if shouldScrollBottom{
       messagesCollectionView.scrollToLastItem(animated: true)
+    }
+  }
+  
+  private func handleDocumentChange(_ change: DocumentChange){
+    guard let message = Message(document: change.document)
+    else {
+      return
+    }
+    switch change.type{
+    case .added:
+      insertNewMessage(message)
+    default:
+      break
     }
   }
 
@@ -249,14 +280,14 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
   func inputBar(
     _ inputBar: InputBarAccessoryView,
     didPressSendButtonWith text: String
-  ){
+  ) {
     // 1
-    let message = Message(user: userm content: text)
-    
+    let message = Message(user: user, content: text)
+
     // 2
     save(message)
-    
-    //3
+
+    // 3
     inputBar.inputTextView.text = ""
   }
 }
