@@ -61,6 +61,34 @@ final class ChatViewController: MessagesViewController {
     setUpMessageView()
     removeMessageAvatars()
   }
+  
+  override func viewDidAppear(_ animated: Bool) {
+    super.viewDidAppear(animated)
+    
+    let testMessage = Message(
+      user: user,
+      content: "This is test message"
+    )
+    insertNewMessage(testMessage)
+  }
+  
+  // MARK: - Helpers
+  private func insertNewMessage(_ message: Message){
+    if messages.contains(message){
+      return
+    }
+    messages.append(message)
+    messages.sort()
+    
+    let isLatesMessage = messages.firstIndex(of: message) == (messages.count - 1)
+    let shouldScrollBottom = messagesCollectionView.isAtBottom && isLatesMessage
+    
+    messagesCollectionView.reloadData()
+    
+    if shouldScrollBottom{
+      messagesCollectionView.scrollToLastItem(animated: true)
+    }
+  }
 
   private func setUpMessageView() {
     maintainPositionOnKeyboardFrameChanged = true
