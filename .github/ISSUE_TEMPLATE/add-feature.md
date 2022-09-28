@@ -1,6 +1,6 @@
 ---
 name: Add Feature
-about: Add feature in this project
+about: 기능 및 페이지 추가 시
 title: "[Feat] **** 기능, 페이지 추가"
 labels: ''
 assignees: ''
