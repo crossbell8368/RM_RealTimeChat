@@ -42,7 +42,9 @@ private var messageListener: ListenerRegistration?
 final class ChatViewController: MessagesViewController {
   private let user: User
   private let channel: Channel
-
+  private let database = Firestore.firestore()
+  private var reference: CollectionReference?
+  
   init(user: User, channel: Channel) {
     self.user = user
     self.channel = channel
@@ -57,11 +59,22 @@ final class ChatViewController: MessagesViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
+    listenToMessages()
     navigationItem.largeTitleDisplayMode = .never
     setUpMessageView()
     removeMessageAvatars()
   }
   
+  private func listenToMessages(){
+    guard let id = channel.id else{
+      navigationController?.popViewController(
+        animated: true)
+      return
+    }
+    reference = database.collection("channels/\(id)/thread")
+  }
+
+  /* test message insert func
   override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
     
@@ -71,8 +84,21 @@ final class ChatViewController: MessagesViewController {
     )
     insertNewMessage(testMessage)
   }
+  */
   
   // MARK: - Helpers
+  private func save(_ message: Message){
+    reference?.addDocument(data: message.representation){
+      [weak self] error in
+      guard let self = self else {return}
+      if let error = error {
+        print("Error sending Message: \(error.localizedDescription)")
+        return
+      }
+      self.messagesCollectionView.scrollToLastItem()
+    }
+  }
+  
   private func insertNewMessage(_ message: Message){
     if messages.contains(message){
       return
@@ -219,7 +245,21 @@ extension ChatViewController: MessagesDataSource{
   
 }
 // MARK: - InputBarAccessoryViewDelegate
-extension ChatViewController: InputBarAccessoryViewDelegate {}
+extension ChatViewController: InputBarAccessoryViewDelegate {
+  func inputBar(
+    _ inputBar: InputBarAccessoryView,
+    didPressSendButtonWith text: String
+  ){
+    // 1
+    let message = Message(user: userm content: text)
+    
+    // 2
+    save(message)
+    
+    //3
+    inputBar.inputTextView.text = ""
+  }
+}
 
 // MARK: - UIImagePickerControllerDelegate
 extension ChatViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {}
