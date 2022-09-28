@@ -71,6 +71,27 @@ final class ChatViewController: MessagesViewController {
 // MARK: - MessagesDisplayDelegate
 extension ChatViewController: MessagesDisplayDelegate {}
 
+//MARK: - MessagesLayoutDelegate
+extension ChatViewController: MessagesLayoutDelegate{
+  //1
+  func footerViewSize(
+    for section: Int,
+    in messagesCollectionView: MessagesCollectionView
+  ) -> CGSize {
+    return CGSize(width: 0, height: 0)
+  }
+  //2
+  func messageTopLabelHeight(
+    for message: MessageType,
+    at indexPath: IndexPath,
+    in messagesCollectionView: MessagesCollectionView
+  ) -> CGFloat {
+    return 20
+  }
+  
+  
+}
+
 // MARK: - MessageDataSource
 extension ChatViewController: MessagesDataSource{
   
@@ -108,8 +129,6 @@ extension ChatViewController: MessagesDataSource{
   }
   
 }
-
-
 // MARK: - InputBarAccessoryViewDelegate
 extension ChatViewController: InputBarAccessoryViewDelegate {}
 
