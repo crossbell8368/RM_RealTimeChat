@@ -36,14 +36,18 @@ import MessageKit
 import InputBarAccessoryView
 import FirebaseFirestore
 
-private var messages: [Message] = []
-private var messageListener: ListenerRegistration?
-
 final class ChatViewController: MessagesViewController {
   private let user: User
   private let channel: Channel
   private let database = Firestore.firestore()
   private var reference: CollectionReference?
+  
+  private var messages: [Message] = []
+  private var messageListener: ListenerRegistration?
+  
+  deinit{
+    messageListener?.remove()
+  }
   
   init(user: User, channel: Channel) {
     self.user = user
@@ -55,10 +59,6 @@ final class ChatViewController: MessagesViewController {
 
   required init?(coder aDecoder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
-  }
-
-  deinit{
-    messageListener?.remove()
   }
   
   override func viewDidLoad() {
@@ -81,9 +81,7 @@ final class ChatViewController: MessagesViewController {
       [weak self] querySnapshot, error in
       guard let self = self else { return }
       guard let snapshot = querySnapshot else {
-        print("""
-        Error listening for channel updates: \\(error?.localizedDescription ?? "No error")
-        """)
+        print("Error listening for channel updates: \(error?.localizedDescription ?? "No error")")
         return
       }
       snapshot.documentChanges.forEach{
